@@ -15,9 +15,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
-        with: { node-version: '20', cache: 'npm' }
-      - run: npm ci
-      - run: npm run build
+        with: { node-version: '20' }
+      - run: npm install -g pnpm && pnpm install --frozen-lockfile=false
+      - run: pnpm run build
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v3
         with: { path: './dist' }
