@@ -48,11 +48,11 @@ const stack = [
 <Base>
   <nav class="nav">
     <div class="container nav-inner">
-      <a href="/" class="nav-logo">kirin<span>.dev</span></a>
+      <a href={`${import.meta.env.BASE_URL}`} class="nav-logo">kirin<span>.dev</span></a>
       <div class="nav-links">
         <a href="#work">作品</a>
         <a href="#stack">技术栈</a>
-        <a href="/posts">博客</a>
+        <a href={`${import.meta.env.BASE_URL}/posts`}>博客</a>
         <a href="#contact" class="nav-cta">联系我</a>
       </div>
     </div>
@@ -67,7 +67,7 @@ const stack = [
       <Typewriter />
       <div class="hero-actions">
         <a href="#work" class="btn btn-primary">查看我的作品</a>
-        <a href="/posts" class="btn btn-ghost">阅读博客</a>
+        <a href={`${import.meta.env.BASE_URL}/posts`} class="btn btn-ghost">阅读博客</a>
       </div>
     </div>
     <div class="scroll-hint">SCROLL</div>

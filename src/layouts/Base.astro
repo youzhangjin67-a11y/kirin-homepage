@@ -14,8 +14,8 @@ const { title = 'Kirin | 前端工程师', description = '把 AI 变成产品的
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}/favicon.svg`} />
+    <link rel="manifest" href={`${import.meta.env.BASE_URL}/manifest.webmanifest`} />
     <title>{title}</title>
   </head>
   <body>
