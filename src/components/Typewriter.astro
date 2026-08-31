@@ -1,0 +1,34 @@
+<div class="hero-sub" id="typewriter" data-phrases='["把 AI 变成产品的前端工程师。","Web 性能优化 · 工程化 · RAG / Agent 落地。","用代码构建让人眼前一亮的体验。"]'></div>
+
+<script>
+  const el = document.getElementById('typewriter')!;
+  const phrases: string[] = JSON.parse(el.dataset.phrases!);
+  let pi = 0, ci = 0, deleting = false;
+
+  function step() {
+    const text = phrases[pi];
+    if (!deleting) {
+      ci++;
+      el.textContent = text.slice(0, ci);
+      if (ci === text.length) {
+        deleting = true;
+        return setTimeout(step, 2200);
+      }
+      return setTimeout(step, 70);
+    }
+    ci--;
+    el.textContent = text.slice(0, ci);
+    if (ci === 0) {
+      deleting = false;
+      pi = (pi + 1) % phrases.length;
+      return setTimeout(step, 400);
+    }
+    setTimeout(step, 35);
+  }
+  step();
+
+  // append blinking cursor
+  const cursor = document.createElement('span');
+  cursor.className = 'cursor';
+  el.appendChild(cursor);
+</script>

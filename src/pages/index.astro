@@ -1,0 +1,174 @@
+---
+import Base from '../layouts/Base.astro';
+import ParticleHero from '../components/ParticleHero.astro';
+import Typewriter from '../components/Typewriter.astro';
+
+const stats = [
+  { num: '3+', label: '年前端开发经验' },
+  { num: '5+', label: '上线项目' },
+  { num: '60%', label: '首屏加载时间优化幅度' },
+  { num: '∞', label: '对像素与性能的执着' },
+];
+
+const works = [
+  {
+    index: '01',
+    title: '九宫格抽奖平台 · 全栈独立交付',
+    desc: '从零到一的完整全栈项目：Vue 3 前端 + Node 后端 API + SQLite 存储 + CDN 兑换码体系。一套代码四实例并行部署，覆盖多站点运行需求，HTTPS、反代、自动续期证书全流程自运维。',
+    tags: ['Vue 3', 'Node.js', 'SQLite', 'Nginx', 'GitHub Actions'],
+    link: 'https://lottery.wuxuanqilin.top',
+    linkText: 'lottery.wuxuanqilin.top',
+  },
+  {
+    index: '02',
+    title: '卡牌展示系统 · 多实例前端矩阵',
+    desc: 'Vue 3 + Vite 构建的卡牌展示应用，单仓库派生四个独立实例（独立域名、独立后端、独立素材库），通过构建时环境变量实现一源多站，维护成本降低 75%。',
+    tags: ['Vue 3', 'Vite', '多环境构建', '宝塔部署'],
+    link: 'https://card1.wuxuanqilin.top',
+    linkText: 'card1.wuxuanqilin.top',
+  },
+  {
+    index: '03',
+    title: 'AI 应用落地 · RAG / Agent 实践',
+    desc: '探索大模型工程化：基于 RAG 的知识库问答、Agent 工作流编排与工具调用。关注如何把 LLM 能力转化为真实可用的产品功能，而非停留在 demo 阶段。',
+    tags: ['RAG', 'Agent', 'LLM', 'Prompt Engineering'],
+    link: '/posts',
+    linkText: '阅读实践文章',
+  },
+];
+
+const stack = [
+  { group: '// 日常主力', items: ['Vue 3', 'TypeScript', 'Vite', 'Pinia', 'Element Plus'] },
+  { group: '// 后端 & 运维', items: ['Node.js', 'Spring Boot', 'SQLite', 'Nginx', 'Linux / 宝塔', 'GitHub Actions'] },
+  { group: '// AI 工程化', items: ['RAG', 'Agent 工作流', 'Prompt Engineering', 'Function Calling'] },
+  { group: '// 正在深入', items: ['WebGL / Three.js', 'Web Performance', '微前端'] },
+];
+---
+
+<Base>
+  <nav class="nav">
+    <div class="container nav-inner">
+      <a href="/" class="nav-logo">kirin<span>.dev</span></a>
+      <div class="nav-links">
+        <a href="#work">作品</a>
+        <a href="#stack">技术栈</a>
+        <a href="/posts">博客</a>
+        <a href="#contact" class="nav-cta">联系我</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero">
+    <ParticleHero />
+    <div class="container hero-content">
+      <div class="hero-tag">Hello, World. 我是 Kirin</div>
+      <h1>构建<span class="accent">快、美、有生命</span>的<br />Web 体验</h1>
+      <Typewriter />
+      <div class="hero-actions">
+        <a href="#work" class="btn btn-primary">查看我的作品</a>
+        <a href="/posts" class="btn btn-ghost">阅读博客</a>
+      </div>
+    </div>
+    <div class="scroll-hint">SCROLL</div>
+  </header>
+
+  <!-- Stats -->
+  <section class="stats">
+    <div class="container stats-grid">
+      {stats.map((s) => (
+        <div class="reveal">
+          <div class="stat-num">{s.num}</div>
+          <div class="stat-label">{s.label}</div>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <!-- Work -->
+  <section id="work">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="section-num">01 // WORK</div>
+        <h2 class="section-title">精选作品</h2>
+      </div>
+      <div class="work-list">
+        {works.map((w) => (
+          <article class="work-card reveal">
+            <div class="work-info">
+              <div class="work-index">PROJECT_{w.index}</div>
+              <h3 class="work-title">{w.title}</h3>
+              <p class="work-desc">{w.desc}</p>
+              <div class="work-tags">
+                {w.tags.map((t) => <span>{t}</span>)}
+              </div>
+              <a class="work-link" href={w.link} target={w.link.startsWith('http') ? '_blank' : undefined}>
+                {w.linkText} <span>→</span>
+              </a>
+            </div>
+            <div class="work-media">
+              <div class="work-media-placeholder" style="font-family:var(--mono);color:var(--text-dim);font-size:0.85rem;">
+                screenshot pending…
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Stack -->
+  <section id="stack" style="background:var(--bg-soft);border-top:1px solid var(--line);border-bottom:1px solid var(--line);">
+    <div class="container">
+      <div class="section-head reveal">
+        <div class="section-num">02 // STACK</div>
+        <h2 class="section-title">技术栈</h2>
+      </div>
+      <div class="stack-groups">
+        {stack.map((g) => (
+          <div class="stack-group reveal">
+            <h3>{g.group}</h3>
+            <div class="stack-items">
+              {g.items.map((i) => <span>{i}</span>)}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="contact">
+    <div class="container reveal">
+      <div class="section-num" style="margin-bottom:16px;">03 // CONTACT</div>
+      <h2>让我们一起做点酷的东西</h2>
+      <p>$ echo "hello" | mail kirin</p>
+      <div class="contact-links">
+        <a class="btn btn-primary" href="mailto:hello@wuxuanqilin.top">hello@wuxuanqilin.top</a>
+        <a class="btn btn-ghost" href="https://github.com/youzhangjin67-a11y" target="_blank">GitHub ↗</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      // designed &amp; built by <span class="hl">Kirin</span> · © 2026 · <a href="https://www.wuxuanqilin.top" class="hl">wuxuanqilin.top</a>
+    </div>
+  </footer>
+
+  <script>
+    // scroll reveal
+    const io = new IntersectionObserver(
+      (entries) => {
+        for (const e of entries) {
+          if (e.isIntersecting) {
+            e.target.classList.add('visible');
+            io.unobserve(e.target);
+          }
+        }
+      },
+      { threshold: 0.12 }
+    );
+    document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+  </script>
+</Base>
