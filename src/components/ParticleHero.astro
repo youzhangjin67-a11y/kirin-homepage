@@ -52,7 +52,7 @@
 
       ctx.beginPath();
       ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
-      ctx.fillStyle = 'rgba(56, 189, 248, 0.8)';
+      ctx.fillStyle = 'rgba(37, 99, 235, 0.65)';
       ctx.fill();
     }
 
@@ -64,7 +64,7 @@
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
           ctx.lineTo(b.x, b.y);
-          ctx.strokeStyle = `rgba(56, 189, 248, ${0.22 * (1 - d / LINK_DIST)})`;
+          ctx.strokeStyle = `rgba(37, 99, 235, ${0.3 * (1 - d / LINK_DIST)})`;
           ctx.lineWidth = devicePixelRatio * 0.7;
           ctx.stroke();
         }
