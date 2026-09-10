@@ -13,27 +13,44 @@ const stats = [
 const works = [
   {
     index: '01',
-    title: '九宫格抽奖平台 · 全栈独立交付',
-    desc: '从零到一的完整全栈项目：Vue 3 前端 + Node 后端 API + SQLite 存储 + CDN 兑换码体系。一套代码四实例并行部署，覆盖多站点运行需求，HTTPS、反代、自动续期证书全流程自运维。',
-    tags: ['Vue 3', 'Node.js', 'SQLite', 'Nginx', 'GitHub Actions'],
+    title: '企业官网 · 品牌展示站',
+    desc: '面向企业品牌展示的单页官网，包含产品介绍、团队展示与联系方式等模块。实现响应式布局与流畅动效，适配多端访问，提升品牌专业度。',
+    tags: ['Vue 3', 'TypeScript', 'Vite', '响应式布局'],
+    link: 'http://example.wuxuanqilin.top/',
+    linkText: 'example.wuxuanqilin.top',
+  },
+  {
+    index: '02',
+    title: '后台管理系统 · 企业级中后台',
+    desc: '基于 Element Plus 的企业级后台管理框架，支持权限、表格、表单等常用功能。沉淀通用组件与布局方案，可快速复用于各类后台业务场景。',
+    tags: ['Vue 3', 'Element Plus', 'TypeScript', 'Pinia'],
+    link: 'http://admin.wuxuanqilin.top/',
+    linkText: 'admin.wuxuanqilin.top',
+  },
+  {
+    index: '03',
+    title: 'RAG 智能问答平台 · AI 落地',
+    desc: '基于 RAG + Spring AI Agent 的智能问答系统，支持知识库检索与多轮对话。实现文档上传、向量检索、Agent 编排与流式对话，构建完整的 AI 问答闭环。',
+    tags: ['Spring Boot', 'Spring AI', 'RAG', '向量数据库', 'Vue 3'],
+    link: 'http://rag.wuxuanqilin.top/',
+    linkText: 'rag.wuxuanqilin.top',
+  },
+];
+
+const moreWorks = [
+  {
+    title: '九宫格抽奖平台',
+    desc: 'Vue 3 + Node + SQLite 全栈独立交付，一套代码四实例并行部署，CDN 兑换码体系。',
+    tags: ['Vue 3', 'Node.js', 'SQLite', 'Nginx'],
     link: 'https://lottery.wuxuanqilin.top',
     linkText: 'lottery.wuxuanqilin.top',
   },
   {
-    index: '02',
-    title: '卡牌展示系统 · 多实例前端矩阵',
-    desc: 'Vue 3 + Vite 构建的卡牌展示应用，单仓库派生四个独立实例（独立域名、独立后端、独立素材库），通过构建时环境变量实现一源多站，维护成本降低 75%。',
-    tags: ['Vue 3', 'Vite', '多环境构建', '宝塔部署'],
+    title: '卡牌展示系统',
+    desc: '单仓库派生四个独立实例（独立域名、后端、素材库），一源多站，维护成本降低 75%。',
+    tags: ['Vue 3', 'Vite', '多环境构建'],
     link: 'https://card1.wuxuanqilin.top',
     linkText: 'card1.wuxuanqilin.top',
-  },
-  {
-    index: '03',
-    title: 'AI 应用落地 · RAG / Agent 实践',
-    desc: '探索大模型工程化：基于 RAG 的知识库问答、Agent 工作流编排与工具调用。关注如何把 LLM 能力转化为真实可用的产品功能，而非停留在 demo 阶段。',
-    tags: ['RAG', 'Agent', 'LLM', 'Prompt Engineering'],
-    link: '/posts',
-    linkText: '阅读实践文章',
   },
 ];
 
@@ -113,6 +130,22 @@ const stack = [
             </div>
           </article>
         ))}
+      </div>
+
+      <div class="more-works reveal">
+        <div class="more-works-head">MORE_PROJECTS // 更多项目</div>
+        <div class="more-works-grid">
+          {moreWorks.map((w) => (
+            <a class="more-work-card" href={w.link} target="_blank">
+              <h4>{w.title}</h4>
+              <p>{w.desc}</p>
+              <div class="work-tags">
+                {w.tags.map((t) => <span>{t}</span>)}
+              </div>
+              <span class="more-work-link">{w.linkText} →</span>
+            </a>
+          ))}
+        </div>
       </div>
     </div>
   </section>

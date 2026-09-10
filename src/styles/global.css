@@ -200,6 +200,28 @@ section { padding: 100px 0; position: relative; }
 }
 .work-media img { width: 100%; height: 100%; object-fit: cover; }
 
+/* ---------- More works (secondary projects) ---------- */
+.more-works { margin-top: 56px; }
+.more-works-head {
+  font-family: var(--mono); font-size: 0.85rem; color: var(--text-dim);
+  letter-spacing: 0.12em; margin-bottom: 20px;
+}
+.more-works-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
+.more-work-card {
+  display: block; background: var(--bg-card); border: 1px solid var(--line);
+  border-radius: 12px; padding: 24px; text-decoration: none;
+  transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+}
+.more-work-card:hover {
+  border-color: rgba(37, 99, 235, 0.45); transform: translateY(-3px);
+  box-shadow: 0 10px 28px rgba(30, 58, 95, 0.08);
+}
+.more-work-card h4 { font-size: 1.05rem; color: var(--text); margin-bottom: 8px; }
+.more-work-card p { font-size: 0.9rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 14px; }
+.more-work-card .work-tags { margin-bottom: 12px; }
+.more-work-card .work-tags span { font-size: 0.7rem; padding: 3px 10px; }
+.more-work-link { font-family: var(--mono); font-size: 0.8rem; color: var(--accent); }
+
 /* ---------- Tech stack ---------- */
 .stack-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
 .stack-group {
