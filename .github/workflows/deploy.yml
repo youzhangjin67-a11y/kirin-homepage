@@ -16,7 +16,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with: { node-version: '22' }
-      - run: npm install -g pnpm && pnpm install --no-frozen-lockfile
+      - run: npm install -g pnpm && pnpm install --no-frozen-lockfile && pnpm approve-builds --all && pnpm install --no-frozen-lockfile
       - run: pnpm run build
       - uses: actions/configure-pages@v4
       - uses: actions/upload-pages-artifact@v3
