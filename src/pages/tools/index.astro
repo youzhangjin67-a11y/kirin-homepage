@@ -1,0 +1,109 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+
+<Base title="Kirin 工具箱" description="Kirin 的在线小工具集合：图片处理与抖音无水印提取。">
+  <main class="wrap">
+    <a class="back" href={`${import.meta.env.BASE_URL}`}>← 返回主页</a>
+    <h1>Kirin <span class="accent">工具箱</span></h1>
+    <p class="sub">自用在线小工具，纯前端处理为主，不留存任何上传内容。</p>
+
+    <div class="tool-grid">
+      <a class="tool-card" href={`${import.meta.env.BASE_URL}/tools/image/`}>
+        <div class="tool-icon">🖼️</div>
+        <div>
+          <h2>图片工具箱</h2>
+          <p>压缩 · 改尺寸 · 转格式，浏览器本地完成</p>
+        </div>
+        <span class="tool-arrow">→</span>
+      </a>
+      <a class="tool-card" href={`${import.meta.env.BASE_URL}/tools/douyin/`}>
+        <div class="tool-icon">🎬</div>
+        <div>
+          <h2>抖音无水印提取</h2>
+          <p>粘贴分享链接，提取无水印视频与封面</p>
+        </div>
+        <span class="tool-arrow">→</span>
+      </a>
+    </div>
+
+    <footer class="foot">
+      <a href={`${import.meta.env.BASE_URL}`}>kirin.dev</a>
+    </footer>
+  </main>
+</Base>
+
+<style>
+  .wrap {
+    width: min(880px, 92%);
+    margin: 0 auto;
+    padding: 90px 0 70px;
+  }
+  .back {
+    display: inline-block;
+    color: var(--text-dim);
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-bottom: 22px;
+  }
+  .back:hover { color: var(--accent); }
+  h1 {
+    font-size: clamp(1.9rem, 5vw, 2.6rem);
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    margin-bottom: 10px;
+  }
+  h1 .accent { color: var(--accent); }
+  .sub {
+    color: var(--text-dim);
+    font-size: 0.95rem;
+    margin-bottom: 38px;
+    font-family: var(--mono);
+  }
+  .tool-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  .tool-card {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 22px;
+    text-decoration: none;
+    transition: border-color 0.25s, transform 0.25s, box-shadow 0.25s;
+  }
+  .tool-card:hover {
+    border-color: #2563eb66;
+    transform: translateY(-3px);
+    box-shadow: 0 12px 30px #1e3a5f14;
+  }
+  .tool-icon { font-size: 1.7rem; line-height: 1; }
+  .tool-card h2 {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .tool-card p {
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    line-height: 1.55;
+  }
+  .tool-arrow {
+    margin-left: auto;
+    color: var(--accent);
+    font-family: var(--mono);
+  }
+  .foot {
+    margin-top: 46px;
+    text-align: center;
+    font-size: 0.8rem;
+    color: var(--text-dim);
+    font-family: var(--mono);
+  }
+</style>

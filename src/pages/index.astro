@@ -66,14 +66,37 @@ const stack = [
   <nav class="nav">
     <div class="container nav-inner">
       <a href={`${import.meta.env.BASE_URL}`} class="nav-logo">kirin<span>.dev</span></a>
-      <div class="nav-links">
+      <div class="nav-links" id="navLinks">
         <a href="#work">作品</a>
         <a href="#stack">技术栈</a>
         <a href={`${import.meta.env.BASE_URL}/posts`}>博客</a>
+        <a href={`${import.meta.env.BASE_URL}/tools/`}>工具箱 ↗</a>
         <a href="#contact" class="nav-cta">联系我</a>
       </div>
+      <button class="nav-burger" id="navBurger" aria-label="打开菜单" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </nav>
+
+  <script>
+    const burger = document.getElementById('navBurger');
+    const links = document.getElementById('navLinks');
+    if (burger && links) {
+      burger.addEventListener('click', () => {
+        const open = links.classList.toggle('open');
+        burger.classList.toggle('open', open);
+        burger.setAttribute('aria-expanded', String(open));
+      });
+      links.querySelectorAll('a').forEach((a) =>
+        a.addEventListener('click', () => {
+          links.classList.remove('open');
+          burger.classList.remove('open');
+          burger.setAttribute('aria-expanded', 'false');
+        })
+      );
+    }
+  </script>
 
   <!-- Hero -->
   <header class="hero">

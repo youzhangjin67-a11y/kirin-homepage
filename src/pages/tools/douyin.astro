@@ -1,0 +1,127 @@
+---
+import Base from '../../layouts/Base.astro';
+
+// 后端解析服务不在 GitHub Pages 上，默认指向宝塔线上站；
+// 自建部署时改这里即可（需允许跨域，目前后端已放开 Access-Control-Allow-Origin: *）
+const API_BASE = 'https://www.wuxuanqilin.top/douyin-api';
+---
+
+<Base title="抖音无水印提取 · 工具箱" description="粘贴抖音分享链接，提取无水印视频与封面。服务器直连，不留存内容。">
+<div class="wrap">
+  <a class="back" href={`${import.meta.env.BASE_URL}/tools/`}>← 返回工具箱</a>
+  <h1>抖音<span>无水印</span>提取</h1>
+  <p class="sub">粘贴抖音分享链接或分享文本，一键提取无水印视频 · 全程服务器直连，不留存任何内容</p>
+
+  <div class="card">
+    <textarea id="input" placeholder="支持两种格式：&#10;1. 分享文本，如：0.28 复制打开抖音... https://v.douyin.com/xxxx/ &#10;2. 直接粘贴 https://v.douyin.com/xxxx/ 或完整视频链接"></textarea>
+    <button class="btn primary" id="go">解析视频</button>
+    <div class="status" id="status"></div>
+  </div>
+
+  <div class="card" id="result">
+    <video id="player" controls playsinline preload="metadata"></video>
+    <div class="result-head">
+      <img id="cover" alt="封面" />
+      <div class="result-info">
+        <div class="t" id="desc"></div>
+        <div class="a" id="author"></div>
+        <div class="tags"><span class="tag" id="dur"></span><span class="tag">无水印</span><span class="tag">MP4</span></div>
+      </div>
+    </div>
+    <div class="acts">
+      <a class="btn primary full" id="dl" href="#" download>⬇️ 保存无水印视频</a>
+      <a class="btn ghost" id="dlCover" href="#" target="_blank" download>保存封面图</a>
+      <button class="btn ghost" id="again">再解析一个</button>
+    </div>
+  </div>
+
+  <footer>
+    仅供个人学习/备份自己发布的作品使用，请尊重原作者版权<br/>
+    视频与封面链接来自抖音 CDN，具有时效性，请及时保存
+  </footer>
+</div>
+</Base>
+
+<style is:global>
+
+:root{
+  --bg:#f8fafc; --card:#fff; --ink:#0f172a; --sub:#64748b;
+  --brand:#2563eb; --brand-soft:#eef4ff; --line:#e2e8f0; --ok:#16a34a; --err:#dc2626;
+  --r:16px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;
+  background-image:radial-gradient(800px 400px at 0% 0%,rgba(37,99,235,.08),transparent)}
+.wrap{max-width:680px;margin:0 auto;padding:20px 16px 60px}
+a.back{display:inline-block;color:var(--sub);text-decoration:none;font-size:14px;margin-bottom:14px}
+h1{font-size:24px;margin-bottom:6px}
+h1 span{color:var(--brand)}
+.sub{color:var(--sub);font-size:14px;margin-bottom:20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;margin-bottom:16px;box-shadow:0 1px 3px rgba(15,23,42,.04)}
+textarea{width:100%;min-height:96px;border:1.5px solid var(--line);border-radius:12px;padding:12px;font-size:15px;resize:vertical;outline:none;font-family:inherit}
+textarea:focus{border-color:var(--brand);box-shadow:0 0 0 3px var(--brand-soft)}
+.hint{font-size:12px;color:var(--sub);margin-top:8px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border:none;border-radius:12px;padding:13px 22px;font-size:15px;font-weight:600;cursor:pointer;transition:.15s}
+.btn.primary{background:var(--brand);color:#fff;width:100%;margin-top:14px}
+.btn.primary:disabled{opacity:.5;cursor:not-allowed}
+.btn.ghost{background:var(--brand-soft);color:var(--brand)}
+.status{margin-top:12px;font-size:14px;text-align:center;min-height:20px}
+.status.err{color:var(--err)}
+.status.ok{color:var(--ok)}
+#result{display:none}
+#result.show{display:block}
+.result-head{display:flex;gap:14px;margin-bottom:16px}
+.result-head img{width:108px;height:150px;object-fit:cover;border-radius:10px;background:var(--brand-soft);flex-shrink:0}
+.result-info{min-width:0}
+.result-info .t{font-size:15px;font-weight:600;line-height:1.45;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.result-info .a{color:var(--sub);font-size:13px;margin-top:8px}
+.tags{display:flex;gap:6px;margin-top:10px;flex-wrap:wrap}
+.tag{font-size:11px;background:var(--brand-soft);color:var(--brand);padding:3px 8px;border-radius:999px}
+.acts{display:grid;gap:10px;grid-template-columns:1fr 1fr}
+.acts .btn{margin-top:0;text-decoration:none}
+.btn.full{grid-column:1/-1;width:100%;text-decoration:none}
+video{width:100%;border-radius:12px;background:#000;margin-bottom:14px;max-height:420px}
+footer{text-align:center;color:var(--sub);font-size:12px;margin-top:30px;line-height:1.8}
+</style>
+
+<script is:inline define:vars={{ API_BASE }}>
+
+const $=id=>document.getElementById(id);
+const input=$('input'),go=$('go'),status=$('status'),result=$('result');
+let lastData=null;
+
+go.onclick=async()=>{
+  const v=input.value.trim();
+  if(!v){show('请先粘贴分享链接','err');return}
+  go.disabled=true;go.textContent='解析中…';show('');
+  result.classList.remove('show');
+  try{
+    const r=await fetch(API_BASE+'/api/parse?url='+encodeURIComponent(v));
+    const d=await r.json();
+    if(!d.ok)throw new Error(d.error||'解析失败');
+    lastData=d;
+    render(d);
+    show('✓ 解析成功','ok');
+  }catch(e){show('✗ '+(e.message||'网络错误'),'err')}
+  go.disabled=false;go.textContent='解析视频';
+};
+
+function render(d){
+  $('desc').textContent=d.desc||'(无标题)';
+  $('author').textContent=d.author?('作者：'+d.author):'';
+  $('dur').textContent=d.duration?Math.round(d.duration/1000)+'s':'视频';
+  $('cover').src=d.cover||'';
+  const dl=API_BASE+'/api/download?url='+encodeURIComponent(d.nowm);
+  $('dl').href=dl;
+  $('player').src=dl;
+  if(d.cover)$('dlCover').href=d.cover;
+  result.classList.add('show');
+  result.scrollIntoView({behavior:'smooth',block:'start'});
+}
+$('again').onclick=()=>{input.value='';input.focus();result.classList.remove('show');show('')};
+function show(t,c){status.textContent=t;status.className='status '+(c||'')}
+
+// 粘贴分享口令自动识别：粘贴后 1s 自动解析
+input.addEventListener('paste',()=>setTimeout(()=>{if(input.value.trim().length>10)go.click()},900));
+
+</script>
