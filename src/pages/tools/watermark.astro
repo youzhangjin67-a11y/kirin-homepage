@@ -1,0 +1,505 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+
+<Base title="图片加水印 · 工具箱" description="给图片添加文字或图片水印，可调位置、透明度、旋转、平铺。全程浏览器本地处理。">
+  <div class="wrap">
+    <header class="top">
+      <a class="logo" href={`${import.meta.env.BASE_URL}/tools/`}>kirin<b>.dev</b>/tools</a>
+      <a class="back" href={`${import.meta.env.BASE_URL}/tools/`}>← 返回工具箱</a>
+    </header>
+
+    <h1>🔖 图片加水印</h1>
+    <p class="sub"><span class="tag">本地处理</span><span class="tag">不上传</span>文字 / 图片水印 · 九宫格定位 · 平铺 · 实时预览</p>
+
+    <div class="layout">
+      <!-- 左侧：设置 -->
+      <div class="side">
+        <section class="card">
+          <h3><span class="n">1</span>水印类型</h3>
+          <div class="seg" id="typeSeg">
+            <button data-t="text" class="on">文字水印</button>
+            <button data-t="image">图片水印</button>
+          </div>
+        </section>
+
+        <section class="card" id="textPane">
+          <h3><span class="n">2</span>文字内容</h3>
+          <input type="text" id="wmText" class="text-input" value="kirin.dev" placeholder="输入水印文字" />
+          <div class="row">
+            <label>字号</label>
+            <input type="range" id="fontSize" min="8" max="120" value="34" />
+            <span class="val" id="fontSizeVal">34</span>
+          </div>
+          <div class="row">
+            <label>颜色</label>
+            <input type="color" id="fontColor" value="#ffffff" />
+            <label class="chk"><input type="checkbox" id="shadow" checked />阴影</label>
+          </div>
+          <div class="row">
+            <label>字体</label>
+            <select id="fontFamily" class="sel">
+              <option value="sans-serif">无衬线</option>
+              <option value="serif">衬线</option>
+              <option value="monospace">等宽</option>
+            </select>
+          </div>
+        </section>
+
+        <section class="card hidden" id="imagePane">
+          <h3><span class="n">2</span>水印图片</h3>
+          <button class="btn btn-ghost full" id="pickLogo">📁 选择水印图片（PNG 透明底最佳）</button>
+          <input type="file" id="logoInput" accept="image/*" />
+          <div class="row">
+            <label>宽度</label>
+            <input type="range" id="logoWidth" min="5" max="100" value="25" />
+            <span class="val" id="logoWidthVal">25%</span>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3><span class="n">3</span>位置与样式</h3>
+          <div class="pos-grid" id="posGrid">
+            <button data-p="tl" title="左上"><span class="dot"></span></button><button data-p="tc" title="上中"><span class="dot"></span></button><button data-p="tr" title="右上"><span class="dot"></span></button>
+            <button data-p="ml" title="左中"><span class="dot"></span></button><button data-p="mc" class="on" title="正中"><span class="dot"></span></button><button data-p="mr" title="右中"><span class="dot"></span></button>
+            <button data-p="bl" title="左下"><span class="dot"></span></button><button data-p="bc" title="下中"><span class="dot"></span></button><button data-p="br" title="右下"><span class="dot"></span></button>
+          </div>
+          <label class="chk tile-chk"><input type="checkbox" id="tile" />平铺整图（九宫格定位不生效）</label>
+          <div class="row hidden" id="tileRow">
+            <label>间距</label>
+            <input type="range" id="tileGap" min="0" max="200" value="60" />
+            <span class="val" id="tileGapVal">60</span>
+          </div>
+          <div class="row">
+            <label>不透明度</label>
+            <input type="range" id="opacity" min="5" max="100" value="45" />
+            <span class="val" id="opacityVal">45%</span>
+          </div>
+          <div class="row">
+            <label>旋转</label>
+            <input type="range" id="rotation" min="-90" max="90" value="0" />
+            <span class="val" id="rotationVal">0°</span>
+          </div>
+          <div class="row">
+            <label>边距</label>
+            <input type="range" id="margin" min="0" max="150" value="24" />
+            <span class="val" id="marginVal">24</span>
+          </div>
+        </section>
+
+        <section class="card">
+          <h3><span class="n">4</span>输出</h3>
+          <div class="seg" id="fmtSeg">
+            <button data-f="image/png" class="on">PNG</button>
+            <button data-f="image/jpeg">JPG</button>
+            <button data-f="image/webp">WebP</button>
+          </div>
+          <div class="row" id="qualityRow" style="display:none">
+            <label>质量</label>
+            <input type="range" id="quality" min="10" max="100" value="92" />
+            <span class="val" id="qualityVal">92%</span>
+          </div>
+        </section>
+      </div>
+
+      <!-- 右侧：预览 -->
+      <div class="main">
+        <div id="drop" class="drop">
+          <div class="icon">🖼️</div>
+          <p>拖拽图片到这里，或 <b>点击选择</b></p>
+        </div>
+        <input type="file" id="fileInput" accept="image/*" />
+
+        <div class="preview-wrap hidden" id="previewWrap">
+          <div class="preview-head">
+            <span class="fname" id="fname"></span>
+            <span class="dims" id="dims"></span>
+          </div>
+          <div class="canvas-holder" id="canvasHolder">
+            <canvas id="cv"></canvas>
+          </div>
+          <div class="actions">
+            <button class="btn btn-primary" id="download">⬇️ 下载水印图片</button>
+            <button class="btn btn-ghost" id="change">更换图片</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</Base>
+
+<style>
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 80px; }
+  .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; }
+  .logo { font-family: var(--mono); font-weight: 700; font-size: 1.05rem; text-decoration: none; color: var(--ink); }
+  .logo b { color: var(--accent); }
+  .back { font-size: 0.85rem; color: var(--text-dim); text-decoration: none; }
+  .back:hover { color: var(--accent); }
+  h1 { font-size: 1.6rem; margin-bottom: 8px; color: var(--ink); }
+  .sub { color: var(--text-dim); font-size: 0.9rem; margin-bottom: 26px; }
+  .sub .tag {
+    display: inline-block; background: var(--accent-soft); color: var(--accent);
+    font-size: 0.72rem; padding: 2px 10px; border-radius: 99px; margin-right: 6px;
+    font-family: var(--mono);
+  }
+
+  .layout { display: grid; grid-template-columns: 350px 1fr; gap: 20px; align-items: start; }
+  @media (max-width: 900px) { .layout { grid-template-columns: 1fr; } }
+
+  .side { display: flex; flex-direction: column; gap: 14px; }
+  .card {
+    background: var(--bg-card); border: 1px solid var(--line);
+    border-radius: 14px; padding: 18px;
+  }
+  .card h3 {
+    font-size: 0.92rem; margin-bottom: 13px;
+    display: flex; align-items: center; gap: 8px; color: var(--ink);
+  }
+  .card h3 .n {
+    font-family: var(--mono); font-size: 0.7rem; color: var(--accent);
+    background: var(--accent-soft); border-radius: 6px; padding: 2px 7px;
+  }
+  .hidden { display: none !important; }
+
+  .row { display: flex; align-items: center; gap: 11px; margin-bottom: 11px; flex-wrap: wrap; }
+  .row:last-child { margin-bottom: 0; }
+  .row label { font-size: 0.84rem; color: var(--text-dim); min-width: 56px; }
+  .val { font-family: var(--mono); font-size: 0.8rem; color: var(--accent); min-width: 46px; text-align: right; }
+  input[type='range'] { flex: 1; accent-color: var(--accent); min-width: 110px; }
+  input[type='color'] {
+    width: 42px; height: 30px; padding: 0; border: 1px solid var(--line);
+    border-radius: 7px; background: none; cursor: pointer;
+  }
+  .sel, .text-input {
+    flex: 1; padding: 8px 10px; border: 1px solid var(--line);
+    border-radius: 8px; font-size: 0.88rem; background: var(--bg-card); color: var(--text);
+  }
+  .text-input { width: 100%; margin-bottom: 12px; font-family: var(--mono); }
+  .sel:focus, .text-input:focus { outline: 2px solid var(--accent-soft); border-color: var(--accent); }
+  .chk { display: flex; align-items: center; gap: 6px; font-size: 0.84rem; color: var(--text); cursor: pointer; }
+  .chk input { accent-color: var(--accent); width: 15px; height: 15px; }
+  .tile-chk { margin: 12px 0 4px; }
+
+  .seg { display: flex; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .seg button {
+    flex: 1; border: 0; background: transparent; padding: 9px 8px;
+    font-size: 0.84rem; cursor: pointer; color: var(--text-dim);
+  }
+  .seg button.on { background: var(--accent); color: #fff; }
+
+  .pos-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px;
+    background: var(--bg-soft); border: 1px solid var(--line);
+    border-radius: 10px; padding: 7px; margin-bottom: 6px;
+  }
+  .pos-grid button {
+    aspect-ratio: 1; border: 1px solid var(--line); border-radius: 6px;
+    background: var(--bg-card); cursor: pointer; position: relative;
+  }
+  .pos-grid button.on { border-color: var(--accent); background: var(--accent-soft); }
+  /* 选中标记：用 box-shadow 代替 ::after，避免 CSS 压缩器吞掉伪元素选择器 */
+  .pos-grid button.on > span.dot {
+    position: absolute; inset: 0; margin: auto;
+    width: 8px; height: 8px; border-radius: 50%; background: var(--accent);
+  }
+
+  .btn {
+    border: 0; border-radius: 10px; padding: 12px 24px;
+    font-size: 0.92rem; cursor: pointer; font-weight: 600;
+  }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: var(--accent-strong); }
+  .btn-ghost { background: var(--bg-card); color: var(--text); border: 1px solid var(--line); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn.full { width: 100%; }
+
+  .drop {
+    border: 2px dashed var(--line); border-radius: 16px; background: var(--bg-card);
+    padding: 80px 20px; text-align: center; cursor: pointer;
+    transition: border-color 0.2s, background 0.2s;
+  }
+  .drop:hover, .drop.over { border-color: var(--accent); background: var(--accent-soft); }
+  .drop .icon { font-size: 2.4rem; }
+  .drop p { color: var(--text-dim); font-size: 0.92rem; margin-top: 10px; }
+  .drop b { color: var(--accent); }
+  #fileInput, #logoInput { display: none; }
+
+  .preview-wrap { background: var(--bg-card); border: 1px solid var(--line); border-radius: 16px; padding: 16px; }
+  .preview-head {
+    display: flex; justify-content: space-between; align-items: baseline;
+    margin-bottom: 12px; font-family: var(--mono); font-size: 0.8rem; color: var(--text-dim);
+  }
+  .fname { font-weight: 600; color: var(--text); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .canvas-holder {
+    display: flex; justify-content: center; align-items: center;
+    background:
+      repeating-conic-gradient(#eef2f7 0% 25%, #fff 0% 50%) 50% / 18px 18px;
+    border-radius: 10px; padding: 12px; overflow: auto;
+  }
+  #cv { max-width: 100%; max-height: 62vh; border-radius: 6px; box-shadow: 0 2px 12px rgba(15, 23, 42, 0.1); }
+  .actions { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+</style>
+
+<script>
+  const $ = (id) => document.getElementById(id);
+
+  // state
+  let source = null;        // HTMLImageElement of the user's picture
+  let sourceName = 'image';
+  let logo = null;          // HTMLImageElement of the watermark logo
+  let logoName = '';
+  let wmType = 'text';
+  let position = 'mc';
+  let format = 'image/png';
+
+  const cv = $('cv');
+  const ctx = cv.getContext('2d');
+
+  /* ---------- load pictures ---------- */
+  function loadFile(file, isLogo) {
+    if (!file || !file.type.startsWith('image/')) return;
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      if (isLogo) {
+        logo = img;
+        logoName = file.name;
+        $('pickLogo').textContent = '✅ ' + logoName;
+        render();
+      } else {
+        source = img;
+        sourceName = file.name;
+        $('fname').textContent = sourceName;
+        $('dims').textContent = img.naturalWidth + ' × ' + img.naturalHeight;
+        $('drop').classList.add('hidden');
+        $('previewWrap').classList.remove('hidden');
+        render();
+      }
+    };
+    img.onerror = () => alert('图片读取失败');
+    img.src = url;
+  }
+
+  /* ---------- draw ---------- */
+  function drawWatermark(ctx, W, H, cfg) {
+    ctx.save();
+    ctx.globalAlpha = cfg.opacity;
+    ctx.translate(cfg.cx, cfg.cy);
+    if (cfg.rotation) ctx.rotate((cfg.rotation * Math.PI) / 180);
+
+    if (cfg.type === 'text') {
+      ctx.font = `${cfg.fontSize}px ${cfg.fontFamily}`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      if (cfg.shadow) {
+        ctx.fillStyle = 'rgba(0,0,0,.45)';
+        ctx.fillText(cfg.text, 2, 2);
+      }
+      ctx.fillStyle = cfg.color;
+      ctx.fillText(cfg.text, 0, 0);
+    } else if (cfg.logo) {
+      const w = Math.round((cfg.logoWidth / 100) * W);
+      const ratio = cfg.logo.height / cfg.logo.width;
+      ctx.drawImage(cfg.logo, -w / 2, (-w * ratio) / 2, w, w * ratio);
+    }
+    ctx.restore();
+  }
+
+  // compute anchor point for a given position
+  function anchor(pos, W, H, mw, mh, margin) {
+    const m = margin;
+    const left = m + mw / 2;
+    const right = W - m - mw / 2;
+    const mid = W / 2;
+    const map = {
+      tl: [left, m + mh / 2],
+      tc: [mid, m + mh / 2],
+      tr: [right, m + mh / 2],
+      ml: [left, H / 2],
+      mc: [mid, H / 2],
+      mr: [right, H / 2],
+      bl: [left, H - m - mh / 2],
+      bc: [mid, H - m - mh / 2],
+      br: [right, H - m - mh / 2],
+    };
+    return map[pos] || map.mc;
+  }
+
+  function measure(cfg, W) {
+    const c = document.createElement('canvas').getContext('2d');
+    if (cfg.type === 'text') {
+      c.font = `${cfg.fontSize}px ${cfg.fontFamily}`;
+      const m = c.measureText(cfg.text);
+      return [m.width, cfg.fontSize * 1.2];
+    }
+    if (cfg.logo) {
+      const w = Math.round((cfg.logoWidth / 100) * W);
+      return [w, w * (cfg.logo.height / cfg.logo.width)];
+    }
+    return [0, 0];
+  }
+
+  function currentCfg(W) {
+    return {
+      type: wmType,
+      text: $('wmText').value || 'kirin.dev',
+      fontSize: Number($('fontSize').value),
+      fontFamily: $('fontFamily').value,
+      color: $('fontColor').value,
+      shadow: $('shadow').checked,
+      logo: logo,
+      logoWidth: Number($('logoWidth').value),
+      opacity: Number($('opacity').value) / 100,
+      rotation: Number($('rotation').value),
+      margin: Number($('margin').value),
+      tile: $('tile').checked,
+      tileGap: Number($('tileGap').value),
+      pos: position,
+      W: W,
+    };
+  }
+
+  function paint(targetCtx, img, cfg) {
+    const W = img.naturalWidth;
+    const H = img.naturalHeight;
+    targetCtx.clearRect(0, 0, W, H);
+    targetCtx.drawImage(img, 0, 0, W, H);
+
+    const [mw, mh] = measure(cfg, W);
+    if (!mw) return;
+
+    if (cfg.tile) {
+      const gap = Math.max(cfg.tileGap, mw * 0.4);
+      const stepX = mw + gap;
+      const stepY = mh + gap;
+      for (let y = mh / 2; y < H + mh; y += stepY) {
+        for (let x = mw / 2; x < W + mw; x += stepX) {
+          drawWatermark(targetCtx, W, H, { ...cfg, cx: x, cy: y });
+        }
+      }
+    } else {
+      const [cx, cy] = anchor(cfg.pos, W, H, mw, mh, cfg.margin);
+      drawWatermark(targetCtx, W, H, { ...cfg, cx, cy });
+    }
+  }
+
+  function render() {
+    if (!source) return;
+    const cfg = currentCfg(source.naturalWidth);
+    cv.width = source.naturalWidth;
+    cv.height = source.naturalHeight;
+    paint(ctx, source, cfg);
+  }
+
+  /* ---------- upload interactions ---------- */
+  const drop = $('drop');
+  const fileInput = $('fileInput');
+
+  drop.addEventListener('click', () => fileInput.click());
+  fileInput.addEventListener('change', (e) => loadFile(e.target.files[0], false));
+  $('change').addEventListener('click', () => fileInput.click());
+
+  ['dragenter', 'dragover'].forEach((t) =>
+    drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('over'); })
+  );
+  ['dragleave', 'drop'].forEach((t) =>
+    drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove('over'); })
+  );
+  drop.addEventListener('drop', (e) => loadFile(e.dataTransfer.files[0], false));
+
+  $('pickLogo').addEventListener('click', () => $('logoInput').click());
+  $('logoInput').addEventListener('change', (e) => loadFile(e.target.files[0], true));
+
+  /* ---------- controls ---------- */
+  $('wmText').addEventListener('input', render);
+  $('shadow').addEventListener('change', render);
+  $('fontColor').addEventListener('input', render);
+  $('fontFamily').addEventListener('change', render);
+
+  const bindRange = (id, label, suffix = '') => {
+    const el = $(id);
+    const out = $(label);
+    const sync = () => { out.textContent = el.value + suffix; render(); };
+    el.addEventListener('input', sync);
+    sync();
+  };
+  bindRange('fontSize', 'fontSizeVal');
+  bindRange('opacity', 'opacityVal', '%');
+  bindRange('rotation', 'rotationVal', '°');
+  bindRange('margin', 'marginVal');
+  bindRange('logoWidth', 'logoWidthVal', '%');
+  bindRange('tileGap', 'tileGapVal');
+  bindRange('quality', 'qualityVal', '%');
+
+  $('tile').addEventListener('change', (e) => {
+    $('tileRow').classList.toggle('hidden', !e.target.checked);
+    render();
+  });
+
+  // segmented buttons
+  function segment(id, onPick) {
+    $(id).addEventListener('click', (e) => {
+      const btn = e.target.closest('button');
+      if (!btn) return;
+      $(id).querySelectorAll('button').forEach((b) => b.classList.remove('on'));
+      btn.classList.add('on');
+      onPick(btn.dataset);
+    });
+  }
+  segment('typeSeg', (d) => {
+    wmType = d.t;
+    $('textPane').classList.toggle('hidden', wmType !== 'text');
+    $('imagePane').classList.toggle('hidden', wmType !== 'image');
+    render();
+  });
+  segment('fmtSeg', (d) => {
+    format = d.f;
+    $('qualityRow').style.display = format === 'image/png' ? 'none' : 'flex';
+  });
+
+  $('posGrid').addEventListener('click', (e) => {
+    const btn = e.target.closest('button');
+    if (!btn) return;
+    $('posGrid').querySelectorAll('button').forEach((b) => b.classList.remove('on'));
+    btn.classList.add('on');
+    position = btn.dataset.p;
+    render();
+  });
+
+  /* ---------- export at full resolution ---------- */
+  $('download').addEventListener('click', () => {
+    if (!source) return;
+    const cfg = currentCfg(source.naturalWidth);
+    const out = document.createElement('canvas');
+    out.width = source.naturalWidth;
+    out.height = source.naturalHeight;
+    const octx = out.getContext('2d');
+    paint(octx, source, cfg);
+
+    // JPG has no alpha — lay down a white base first
+    if (format === 'image/jpeg') {
+      const flat = document.createElement('canvas');
+      flat.width = out.width;
+      flat.height = out.height;
+      const fctx = flat.getContext('2d');
+      fctx.fillStyle = '#ffffff';
+      fctx.fillRect(0, 0, out.width, out.height);
+      fctx.drawImage(out, 0, 0);
+      out.width = flat.width;
+      out.height = flat.height;
+      out.getContext('2d').drawImage(flat, 0, 0);
+    }
+
+    const q = Number($('quality').value) / 100;
+    out.toBlob((blob) => {
+      if (!blob) { alert('导出失败'); return; }
+      const ext = format === 'image/jpeg' ? 'jpg' : format === 'image/webp' ? 'webp' : 'png';
+      const base = sourceName.replace(/\.[^.]+$/, '');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${base}-watermarked.${ext}`;
+      a.click();
+      setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    }, format, q);
+  });
+</script>
