@@ -111,7 +111,7 @@ const stack = [
                 {w.tags.map((t) => <span>{t}</span>)}
               </div>
               <a class="work-link" href={w.link} target={w.link.startsWith('http') ? '_blank' : undefined}>
-                {w.linkText} <span>→</span>
+                {w.linkText} <span aria-hidden="true">&gt;</span>
               </a>
             </div>
             <div class="work-media">
@@ -133,7 +133,7 @@ const stack = [
               <div class="work-tags">
                 {w.tags.map((t) => <span>{t}</span>)}
               </div>
-              <span class="more-work-link">{w.linkText} →</span>
+              <span class="more-work-link">{w.linkText} &gt;</span>
             </a>
           ))}
         </div>

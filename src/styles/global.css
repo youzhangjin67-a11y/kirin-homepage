@@ -245,7 +245,7 @@ section { padding: 100px 0; position: relative; }
 .more-work-card p { font-size: 0.9rem; color: var(--text-dim); line-height: 1.6; margin-bottom: 14px; }
 .more-work-card .work-tags { margin-bottom: 12px; }
 .more-work-card .work-tags span { font-size: 0.7rem; padding: 3px 10px; }
-.more-work-link { font-family: var(--mono); font-size: 0.8rem; color: var(--accent); }
+.more-work-link { font-family: var(--mono); font-size: 0.8rem; color: var(--accent); font-weight: 600; }
 
 /* ---------- Tech stack ---------- */
 .stack-groups { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; }
