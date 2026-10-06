@@ -1,13 +1,11 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
 ---
 
 <Base title="图片加水印 · 工具箱" description="给图片添加文字或图片水印，可调位置、透明度、旋转、平铺。全程浏览器本地处理。">
+<Nav active="tools" />
   <div class="wrap">
-    <header class="top">
-      <a class="logo" href={`${import.meta.env.BASE_URL}/tools/`}>kirin<b>.dev</b>/tools</a>
-      <a class="back" href={`${import.meta.env.BASE_URL}/tools/`}>← 返回工具箱</a>
-    </header>
 
     <h1>🔖 图片加水印</h1>
     <p class="sub"><span class="tag">本地处理</span><span class="tag">不上传</span>文字 / 图片水印 · 九宫格定位 · 平铺 · 实时预览</p>
@@ -129,7 +127,7 @@ import Base from '../../layouts/Base.astro';
 </Base>
 
 <style>
-  .wrap { max-width: 1180px; margin: 0 auto; padding: 24px 16px 80px; }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 104px 16px 80px; }
   .top { display: flex; align-items: center; justify-content: space-between; margin-bottom: 26px; }
   .logo { font-family: var(--mono); font-weight: 700; font-size: 1.05rem; text-decoration: none; color: var(--ink); }
   .logo b { color: var(--accent); }

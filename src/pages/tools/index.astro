@@ -1,10 +1,11 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
 ---
 
 <Base title="Kirin 工具箱" description="Kirin 的在线小工具集合：图片处理与抖音无水印提取。">
+  <Nav active="tools" />
   <main class="wrap">
-    <a class="back" href={`${import.meta.env.BASE_URL}`}>← 返回主页</a>
     <h1>Kirin <span class="accent">工具箱</span></h1>
     <p class="sub">自用在线小工具，纯前端处理为主，不留存任何上传内容。</p>
 
@@ -45,16 +46,8 @@ import Base from '../../layouts/Base.astro';
   .wrap {
     width: min(880px, 92%);
     margin: 0 auto;
-    padding: 90px 0 70px;
+    padding: 116px 0 70px;
   }
-  .back {
-    display: inline-block;
-    color: var(--text-dim);
-    text-decoration: none;
-    font-size: 0.9rem;
-    margin-bottom: 22px;
-  }
-  .back:hover { color: var(--accent); }
   h1 {
     font-size: clamp(1.9rem, 5vw, 2.6rem);
     font-weight: 800;

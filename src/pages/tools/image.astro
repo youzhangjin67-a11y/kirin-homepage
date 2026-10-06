@@ -1,13 +1,11 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
 ---
 
 <Base title="图片工具箱 · 压缩 / 改尺寸 / 转格式" description="浏览器本地图片处理：压缩、改尺寸、转格式，不上传不留存。">
+<Nav active="tools" />
 <div class="wrap">
-  <header class="top">
-    <a class="logo" href={`${import.meta.env.BASE_URL}/tools/`}>kirin<b>.dev</b>/tools</a>
-    <a class="back" href={`${import.meta.env.BASE_URL}/tools/`}>← 返回工具箱</a>
-  </header>
 
   <h1>🖼️ 图片工具箱</h1>
   <p class="sub"><span class="tag">本地处理</span><span class="tag">不上传</span><span class="tag">免费</span>压缩大小 · 修改宽高 · 转换格式，全部在你的浏览器内完成，图片不会离开设备。</p>
@@ -70,16 +68,16 @@ import Base from '../../layouts/Base.astro';
 
 <style is:global>
 
-:root{
-  --bg:#f8fafc; --bg-soft:#eef4ff; --card:#fff; --text:#1e293b; --dim:#64748b;
-  --accent:#2563eb; --accent-soft:#eff6ff; --line:#e2e8f0; --ok:#16a34a; --warn:#dc2626;
-  --mono:ui-monospace,'SF Mono',Menlo,Consolas,monospace;
+/* 主题变量收敛到本页容器，避免覆盖全局设计令牌（导航栏依赖全局 --mono/--line 等） */
+.wrap{
+  --bg-soft:#eef4ff; --card:#fff; --dim:#64748b;
+  --accent-soft:#eff6ff; --ok:#16a34a; --warn:#dc2626;
 }
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:system-ui,-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+body{background:var(--bg);color:var(--text);min-height:100vh}
 body::before{content:'';position:fixed;top:-160px;left:-160px;width:480px;height:480px;border-radius:50%;
   background:radial-gradient(circle,rgba(37,99,235,.10),transparent 70%);pointer-events:none}
-.wrap{max-width:1080px;margin:0 auto;padding:24px 16px 80px}
+.wrap{max-width:1080px;margin:0 auto;padding:104px 16px 80px}
 header.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px}
 .logo{font-family:var(--mono);font-weight:700;font-size:1.1rem;text-decoration:none;color:var(--text)}
 .logo b{color:var(--accent)}

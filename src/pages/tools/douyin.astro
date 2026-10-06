@@ -1,5 +1,6 @@
 ---
 import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
 
 // 后端解析服务不在 GitHub Pages 上，默认指向宝塔线上站；
 // 自建部署时改这里即可（需允许跨域，目前后端已放开 Access-Control-Allow-Origin: *）
@@ -7,8 +8,8 @@ const API_BASE = 'https://www.wuxuanqilin.top/douyin-api';
 ---
 
 <Base title="抖音无水印提取 · 工具箱" description="粘贴抖音分享链接，提取无水印视频与封面。服务器直连，不留存内容。">
+<Nav active="tools" />
 <div class="wrap">
-  <a class="back" href={`${import.meta.env.BASE_URL}/tools/`}>← 返回工具箱</a>
   <h1>抖音<span>无水印</span>提取</h1>
   <p class="sub">粘贴抖音分享链接或分享文本，一键提取无水印视频 · 全程服务器直连，不留存任何内容</p>
 
@@ -44,15 +45,16 @@ const API_BASE = 'https://www.wuxuanqilin.top/douyin-api';
 
 <style is:global>
 
-:root{
-  --bg:#f8fafc; --card:#fff; --ink:#0f172a; --sub:#64748b;
-  --brand:#2563eb; --brand-soft:#eef4ff; --line:#e2e8f0; --ok:#16a34a; --err:#dc2626;
+/* 主题变量收敛到本页容器，避免覆盖全局设计令牌（导航栏依赖全局 --line 等） */
+.wrap{
+  --card:#fff; --sub:#64748b;
+  --brand:#2563eb; --brand-soft:#eef4ff; --ok:#16a34a; --err:#dc2626;
   --r:16px;
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;
+body{background:var(--bg);color:var(--ink);min-height:100vh;
   background-image:radial-gradient(800px 400px at 0% 0%,rgba(37,99,235,.08),transparent)}
-.wrap{max-width:680px;margin:0 auto;padding:20px 16px 60px}
+.wrap{max-width:680px;margin:0 auto;padding:104px 16px 60px}
 a.back{display:inline-block;color:var(--sub);text-decoration:none;font-size:14px;margin-bottom:14px}
 h1{font-size:24px;margin-bottom:6px}
 h1 span{color:var(--brand)}
