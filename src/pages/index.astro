@@ -3,9 +3,12 @@ import Base from '../layouts/Base.astro';
 import Nav from '../components/Nav.astro';
 import ParticleHero from '../components/ParticleHero.astro';
 import Typewriter from '../components/Typewriter.astro';
+import workImage1 from '../assets/image/1.png';
+import workImage2 from '../assets/image/2.png';
+import workImage3 from '../assets/image/3.png';
 
 const stats = [
-  { num: '3+', label: '年前端开发经验' },
+  { num: '1+', label: '年前端开发经验' },
   { num: '5+', label: '上线项目' },
   { num: '60%', label: '首屏加载时间优化幅度' },
   { num: '∞', label: '对像素与性能的执着' },
@@ -19,6 +22,7 @@ const works = [
     tags: ['Vue 3', 'TypeScript', 'Vite', '响应式布局'],
     link: 'http://example.wuxuanqilin.top/',
     linkText: 'example.wuxuanqilin.top',
+    image: workImage1,
   },
   {
     index: '02',
@@ -27,6 +31,7 @@ const works = [
     tags: ['Vue 3', 'Element Plus', 'TypeScript', 'Pinia'],
     link: 'http://admin.wuxuanqilin.top/',
     linkText: 'admin.wuxuanqilin.top',
+    image: workImage2,
   },
   {
     index: '03',
@@ -35,6 +40,7 @@ const works = [
     tags: ['Spring Boot', 'Spring AI', 'RAG', '向量数据库', 'Vue 3'],
     link: 'http://rag.wuxuanqilin.top/',
     linkText: 'rag.wuxuanqilin.top',
+    image: workImage3,
   },
 ];
 
@@ -115,9 +121,7 @@ const stack = [
               </a>
             </div>
             <div class="work-media">
-              <div class="work-media-placeholder" style="font-family:var(--mono);color:var(--text-dim);font-size:0.85rem;">
-                screenshot pending…
-              </div>
+              <img src={w.image.src} alt={`${w.title}项目截图`} loading="lazy" decoding="async" />
             </div>
           </article>
         ))}
