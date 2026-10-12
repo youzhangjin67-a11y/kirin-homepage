@@ -1,0 +1,569 @@
+---
+import Base from '../../layouts/Base.astro';
+import Nav from '../../components/Nav.astro';
+---
+
+<Base title="视频转音频 · 工具箱" description="把视频文件的音轨提取为音频。全程浏览器本地处理，文件不离开设备。">
+<Nav active="tools" />
+  <div class="wrap">
+
+    <h1>🎵 视频转音频</h1>
+    <p class="sub"><span class="tag">本地处理</span><span class="tag">不上传</span>提取视频音轨 · 导出 WAV / M4A · 可调采样率与声道</p>
+
+    <div id="drop">
+      <div class="icon">🎬</div>
+      <p>拖拽视频到这里，或 <b>点击选择</b></p>
+      <span class="hint">支持 MP4 / WebM / MKV / MOV 等带音轨的视频</span>
+    </div>
+    <input type="file" id="fileInput" accept="video/*" />
+
+    <!-- 文件信息 -->
+    <div class="filebar hidden" id="filebar">
+      <div class="fileinfo">
+        <span class="fname" id="fname">—</span>
+        <span class="fmeta" id="fmeta">—</span>
+      </div>
+      <button class="btn btn-ghost sm" id="clear">更换文件</button>
+    </div>
+
+    <!-- 音轨信息 -->
+    <div class="card hidden" id="trackCard">
+      <h3><span class="n">1</span>音轨信息</h3>
+      <div class="trackgrid" id="trackGrid"></div>
+    </div>
+
+    <!-- 音频预览播放器 -->
+    <div class="card hidden" id="playerCard">
+      <h3><span class="n">2</span>试听</h3>
+      <div class="player">
+        <button class="playbtn" id="playBtn" disabled>▶</button>
+        <div class="trackbar">
+          <div class="trackbar-fill" id="trackFill"></div>
+          <div class="trackbar-thumb" id="trackThumb"></div>
+        </div>
+        <span class="time" id="timeLabel">0:00 / 0:00</span>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <label style="min-width:88px">音量</label>
+        <input type="range" id="vol" min="0" max="100" value="100" />
+        <span class="val" id="volVal">100%</span>
+      </div>
+    </div>
+
+    <!-- 导出设置 -->
+    <div class="card hidden" id="optCard">
+      <h3><span class="n">3</span>导出设置</h3>
+      <div class="row">
+        <label style="min-width:88px">格式</label>
+        <div class="seg" id="fmtSeg">
+          <button data-f="wav" class="on">WAV</button>
+          <button data-f="m4a">M4A</button>
+        </div>
+      </div>
+      <div class="row">
+        <label style="min-width:88px">采样率</label>
+        <select id="sampleRate" class="sel">
+          <option value="0">原始</option>
+          <option value="44100">44100 Hz</option>
+          <option value="48000">48000 Hz</option>
+          <option value="32000">32000 Hz</option>
+          <option value="22050">22050 Hz</option>
+        </select>
+        <label class="chk"><input type="checkbox" id="mono" />单声道</label>
+      </div>
+      <p class="hint" id="fmtHint">WAV 即时导出，无损未压缩。M4A 为有损压缩（AAC），体积更小。</p>
+    </div>
+
+    <div class="actions">
+      <button class="btn btn-primary hidden" id="go" disabled>⬇ 导出音频</button>
+    </div>
+
+    <!-- 进度 -->
+    <div class="progress hidden" id="progressWrap">
+      <div class="pbar"><div class="pbar-fill" id="pbarFill"></div></div>
+      <p class="ptext" id="progressText">处理中...</p>
+    </div>
+
+    <!-- 结果 -->
+    <div class="result hidden" id="result"></div>
+
+    <p class="empty-tip" id="emptyTip">还没有可导出的音频</p>
+
+    <footer>// processed locally in your browser · built by Kirin</footer>
+  </div>
+</Base>
+
+<style is:global>
+/* 主题变量收敛到本页容器，避免覆盖全局设计令牌（导航栏依赖全局 --mono/--line 等） */
+.wrap {
+  --bg-soft:#eef4ff; --card:#fff; --dim:#64748b;
+  --accent-soft:#eff6ff; --ok:#16a34a; --warn:#dc2626;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); min-height:100vh; }
+body::before { content:''; position:fixed; top:-160px; left:-160px; width:480px; height:480px; border-radius:50%;
+  background:radial-gradient(circle,rgba(37,99,235,.10),transparent 70%); pointer-events:none; }
+.wrap { max-width:860px; margin:0 auto; padding:104px 16px 80px; }
+h1 { font-size:clamp(1.8rem,4.6vw,2.4rem); font-weight:800; letter-spacing:-.01em; margin-bottom:10px; }
+.sub { color:var(--dim); font-size:.9rem; margin-bottom:26px; font-family:var(--mono); display:flex; flex-wrap:wrap; align-items:center; gap:8px; }
+.tag { background:var(--accent-soft); color:#2563eb; border:1px solid #bfdbfe; padding:2px 10px; border-radius:99px; font-size:.74rem; font-weight:600; font-family:var(--mono); }
+
+/* 拖拽区 */
+#drop { position:relative; border:2px dashed #cbd5e1; border-radius:16px; background:var(--bg-soft);
+  padding:46px 20px; text-align:center; cursor:pointer; transition:.2s; }
+#drop:hover, #drop.over { border-color:#2563eb; background:#e0ecff; transform:translateY(-2px); }
+#drop .icon { font-size:2.6rem; margin-bottom:10px; }
+#drop p { color:var(--text); font-size:1rem; }
+#drop .hint { color:var(--dim); font-size:.78rem; font-family:var(--mono); display:block; margin-top:8px; }
+#fileInput { display:none; }
+
+/* 文件信息条 */
+.filebar { display:flex; align-items:center; gap:12px; margin:18px 0 0; padding:14px 18px;
+  background:var(--card); border:1px solid var(--line); border-radius:12px; }
+.fname { font-weight:700; font-size:.95rem; color:var(--text); word-break:break-all; }
+.fmeta { display:block; font-size:.76rem; color:var(--dim); font-family:var(--mono); margin-top:3px; }
+.fileinfo { flex:1; min-width:0; }
+.btn { font:inherit; font-size:.9rem; font-weight:600; padding:11px 22px; border-radius:10px;
+  border:1px solid transparent; cursor:pointer; transition:.18s; }
+.btn-primary { background:#2563eb; color:#fff; }
+.btn-primary:hover:not(:disabled) { background:#1d4ed8; transform:translateY(-1px); box-shadow:0 6px 16px rgba(37,99,235,.3); }
+.btn-ghost { background:#fff; border-color:var(--line); color:var(--text); }
+.btn-ghost:hover { border-color:#94a3b8; }
+.btn:disabled { opacity:.45; cursor:not-allowed; }
+.btn.sm { padding:7px 14px; font-size:.8rem; }
+
+/* 卡片 */
+.card { background:var(--card); border:1px solid var(--line); border-radius:14px;
+  padding:22px; margin:18px 0; box-shadow:0 1px 3px rgba(15,23,42,.04); }
+.card h3 { font-size:1rem; font-weight:700; color:var(--text); margin-bottom:16px;
+  display:flex; align-items:center; gap:10px; }
+.n { display:inline-flex; align-items:center; justify-content:center; width:22px; height:22px; border-radius:7px;
+  background:var(--accent); color:#fff; font-size:.78rem; font-weight:700; flex-shrink:0; }
+.row { display:flex; align-items:center; gap:12px; margin-bottom:12px; flex-wrap:wrap; }
+.row:last-child { margin-bottom:0; }
+label { font-size:.88rem; color:var(--text); }
+.chk { display:flex; align-items:center; gap:6px; font-size:.85rem; color:var(--dim); cursor:pointer; }
+.val { font-family:var(--mono); font-size:.84rem; color:var(--dim); min-width:46px; }
+.hint { color:var(--dim); font-size:.78rem; line-height:1.6; margin-top:6px; }
+
+/* 音轨信息网格 */
+.trackgrid { display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; }
+.trackgrid .cell { background:var(--bg-soft); border:1px solid var(--line); border-radius:10px; padding:12px 14px; }
+.cell .k { font-size:.7rem; color:var(--dim); font-family:var(--mono); text-transform:uppercase; letter-spacing:.04em; }
+.cell .v { font-size:1rem; font-weight:700; color:var(--text); margin-top:4px; font-family:var(--mono); }
+
+/* 播放器 */
+.player { display:flex; align-items:center; gap:12px; }
+.playbtn { width:44px; height:44px; border-radius:50%; border:none; background:var(--accent); color:#fff;
+  font-size:1rem; cursor:pointer; flex-shrink:0; transition:.18s; }
+.playbtn:hover:not(:disabled) { background:#1d4ed8; }
+.playbtn:disabled { opacity:.4; cursor:not-allowed; }
+.trackbar { flex:1; height:6px; background:var(--line); border-radius:99px; position:relative; cursor:pointer; }
+.trackbar-fill { height:100%; background:var(--accent); border-radius:99px; width:0%; }
+.trackbar-thumb { position:absolute; top:50%; left:0; transform:translate(-50%,-50%);
+  width:14px; height:14px; border-radius:50%; background:#fff; border:2px solid var(--accent); opacity:0; transition:opacity .15s; }
+.trackbar:hover .trackbar-thumb { opacity:1; }
+.time { font-family:var(--mono); font-size:.8rem; color:var(--dim); min-width:104px; text-align:right; }
+
+/* 分段选择 */
+.seg { display:inline-flex; background:var(--bg-soft); border:1px solid var(--line); border-radius:10px; padding:3px; gap:3px; }
+.seg button { border:none; background:transparent; padding:7px 18px; border-radius:8px; cursor:pointer;
+  font:inherit; font-size:.86rem; color:var(--dim); transition:.16s; }
+.seg button.on { background:var(--card); color:var(--text); font-weight:600; box-shadow:0 1px 3px rgba(15,23,42,.1); }
+
+select.sel { padding:8px 12px; border:1px solid var(--line); border-radius:8px; font:inherit; font-size:.88rem; background:#fff; color:var(--text); }
+input[type=range] { accent-color:var(--accent); }
+
+.actions { margin-top:20px; display:flex; gap:12px; justify-content:center; }
+
+/* 进度 */
+.progress { margin-top:18px; background:var(--card); border:1px solid var(--line); border-radius:12px; padding:18px; }
+.pbar { height:8px; background:var(--bg-soft); border-radius:99px; overflow:hidden; }
+.pbar-fill { height:100%; width:0%; background:linear-gradient(90deg,#3b82f6,#2563eb); border-radius:99px; transition:width .25s; }
+.ptext { text-align:center; margin-top:10px; font-size:.84rem; color:var(--dim); font-family:var(--mono); }
+
+/* 结果 */
+.result { margin-top:18px; background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:18px; display:flex; align-items:center; gap:14px; }
+.result .ico { font-size:1.6rem; }
+.result .txt { flex:1; }
+.result .txt b { font-size:.95rem; color:var(--text); display:block; }
+.result .txt span { font-size:.78rem; color:var(--dim); font-family:var(--mono); display:block; margin-top:3px; }
+.result .dl { background:var(--ok); color:#fff; border:none; padding:10px 18px; border-radius:10px;
+  font:inherit; font-weight:600; font-size:.86rem; cursor:pointer; transition:.18s; text-decoration:none; }
+.result .dl:hover { background:#15803d; }
+
+.empty-tip { text-align:center; color:var(--dim); font-size:.85rem; margin-top:20px; font-family:var(--mono); }
+footer { margin-top:46px; text-align:center; color:var(--dim); font-size:.78rem; font-family:var(--mono); }
+.hidden { display:none !important; }
+</style>
+
+<script>
+  // 视频转音频：AudioContext.decodeAudioData 直接从视频容器解码音轨
+  // WAV 即时导出（手写 RIFF 头）；M4A 用 MediaRecorder 实时录制（audio/mp4, AAC）
+
+  const $ = id => document.getElementById(id);
+  const els = {
+    drop: $('drop'), fileInput: $('fileInput'), filebar: $('filebar'),
+    fname: $('fname'), fmeta: $('fmeta'), clear: $('clear'),
+    trackCard: $('trackCard'), trackGrid: $('trackGrid'),
+    playerCard: $('playerCard'), playBtn: $('playBtn'), trackbar: null,
+    trackFill: $('trackFill'), timeLabel: $('timeLabel'), vol: $('vol'), volVal: $('volVal'),
+    optCard: $('optCard'), fmtSeg: $('fmtSeg'), sampleRate: $('sampleRate'), mono: $('mono'),
+    fmtHint: $('fmtHint'), go: $('go'),
+    progressWrap: $('progressWrap'), pbarFill: $('pbarFill'), progressText: $('progressText'),
+    result: $('result'), emptyTip: $('emptyTip')
+  };
+  els.trackbar = document.querySelector('.trackbar');
+
+  let file = null;          // 当前视频 File
+  let audioBuf = null;      // 解码后的 AudioBuffer
+  let fmt = 'wav';
+  let audioEl = null;       // 预览播放器（HTMLAudioElement）
+  let ctx = null;           // AudioContext（M4A 录制用）
+  let recorder = null;
+  let chunks = [];
+  let playTimer = null;
+
+  /* ---------- 工具函数 ---------- */
+
+  const fmtBytes = n => {
+    if (n < 1024) return n + ' B';
+    if (n < 1048576) return (n / 1024).toFixed(1) + ' KB';
+    if (n < 1073741824) return (n / 1048576).toFixed(1) + ' MB';
+    return (n / 1073741824).toFixed(2) + ' GB';
+  };
+  const fmtTime = s => {
+    if (!isFinite(s)) return '0:00';
+    const m = Math.floor(s / 60), sec = Math.floor(s % 60);
+    return m + ':' + String(sec).padStart(2, '0');
+  };
+  const setProgress = (pct, text) => {
+    els.progressWrap.classList.remove('hidden');
+    els.pbarFill.style.width = Math.max(0, Math.min(100, pct)) + '%';
+    if (text != null) els.progressText.textContent = text;
+  };
+  const hideProgress = () => els.progressWrap.classList.add('hidden');
+
+  // Promise 竞速：超时则 reject 带可读信息，防止某个可能永不 resolve 的 Promise
+  // （典型：AudioContext.resume()）把按钮永久锁死。
+  function race(p, ms, msg) {
+    return new Promise((res, rej) => {
+      const t = setTimeout(() => rej(new Error(msg)), ms);
+      Promise.resolve(p).then(v => { clearTimeout(t); res(v); },
+                            e => { clearTimeout(t); rej(e); });
+    });
+  }
+
+  /* ---------- 文件选择 ---------- */
+
+  function accept(f) {
+    file = f;
+    els.fname.textContent = f.name;
+    els.fmeta.textContent = fmtBytes(f.size) + (f.type ? ' · ' + f.type : ' · 类型未知');
+    els.filebar.classList.remove('hidden');
+    els.trackCard.classList.add('hidden');
+    els.playerCard.classList.add('hidden');
+    els.optCard.classList.add('hidden');
+    els.go.classList.add('hidden');
+    els.result.classList.add('hidden');
+    els.emptyTip.classList.remove('hidden');
+    stopPreview();
+    audioBuf = null;
+
+    setProgress(8, '读取文件中...');
+    const reader = new FileReader();
+    reader.onload = async () => {
+      setProgress(22, '解码音轨（视频越大会越久）...');
+      await decodeAudio(reader.result);
+    };
+    reader.onerror = () => setProgress(0, '文件读取失败');
+    reader.readAsArrayBuffer(f);
+  }
+
+  async function decodeAudio(arrayBuffer) {
+    const AC = window.AudioContext || window.webkitAudioContext;
+    if (!AC) { setProgress(0, '当前浏览器不支持 Web Audio'); return; }
+
+    // 用独立的 context 解码（M4A 录制另开一个，避免互相干扰）
+    const dctx = new AC();
+    try {
+      // decodeAudioData 需要独立副本，原 buffer 可能已被 detach
+      const ab = new Uint8Array(arrayBuffer).slice().buffer;
+      audioBuf = await dctx.decodeAudioData(ab);
+      await showTrackInfo();
+    } catch (e) {
+      audioBuf = null;
+      setProgress(0, '解码失败：该文件可能没有音轨，或编码格式不受支持');
+      console.error('[decode]', e);
+    }
+    dctx.close().catch(() => {});
+  }
+
+  async function showTrackInfo() {
+    if (!audioBuf) return;
+    const sr = audioBuf.sampleRate, ch = audioBuf.numberOfChannels, d = audioBuf.duration;
+    const kbps = Math.round((d > 0 ? (audioBuf.length * 16 * ch) / d / 1000 : 0));
+    const cells = [
+      ['时长', fmtTime(d)],
+      ['采样率', (sr / 1000) + ' kHz'],
+      ['声道', ch === 1 ? '单声道' : ch === 2 ? '立体声' : ch + ' 声道'],
+      ['原始码率', kbps + ' kbps'],
+      ['样本数', audioBuf.length.toLocaleString()],
+    ];
+    els.trackGrid.innerHTML = cells.map(([k, v]) =>
+      `<div class="cell"><div class="k">${k}</div><div class="v">${v}</div></div>`).join('');
+    els.trackCard.classList.remove('hidden');
+
+    // 起播放器
+    await startPreview();
+    els.optCard.classList.remove('hidden');
+    els.go.disabled = false;
+    els.go.classList.remove('hidden');
+    hideProgress();
+  }
+
+  /* ---------- 预览播放器 ---------- */
+
+  async function startPreview() {
+    if (!audioBuf) return;
+    stopPreview();
+    // WAV Blob → objectURL，用原生 audio 元素播放，播放头拖拽天然可用
+    const wav = encodeWav(audioBuf);
+    const url = URL.createObjectURL(wav);
+    audioEl = new Audio(url);
+    audioEl.preload = 'auto';
+    audioEl.volume = els.vol.value / 100;
+    audioEl.addEventListener('loadedmetadata', () => {
+      els.playBtn.disabled = false;
+      els.timeLabel.textContent = '0:00 / ' + fmtTime(audioEl.duration);
+    });
+    audioEl.addEventListener('timeupdate', updatePlayUI);
+    audioEl.addEventListener('ended', () => { els.playBtn.textContent = '▶'; updatePlayUI(); });
+    els.playBtn.disabled = false;
+    els.playBtn.textContent = '▶';
+    els.playerCard.classList.remove('hidden');
+  }
+
+  function stopPreview() {
+    if (audioEl) {
+      audioEl.pause();
+      audioEl.src = '';
+      const old = audioEl;
+      audioEl = null;
+      setTimeout(() => URL.revokeObjectURL(old.src), 0);
+    }
+    if (playTimer) { clearInterval(playTimer); playTimer = null; }
+    els.playBtn.disabled = true;
+    els.playBtn.textContent = '▶';
+    els.trackFill.style.width = '0%';
+  }
+
+  function togglePlay() {
+    if (!audioEl) return;
+    if (audioEl.paused) { audioEl.play().catch(() => {}); els.playBtn.textContent = '❚❚'; }
+    else { audioEl.pause(); els.playBtn.textContent = '▶'; }
+  }
+
+  function updatePlayUI() {
+    if (!audioEl || !isFinite(audioEl.duration)) return;
+    const p = audioEl.duration ? (audioEl.currentTime / audioEl.duration) * 100 : 0;
+    els.trackFill.style.width = p + '%';
+    els.timeLabel.textContent = fmtTime(audioEl.currentTime) + ' / ' + fmtTime(audioEl.duration);
+  }
+
+  /* ---------- WAV 编码（即时，无损） ---------- */
+
+  function encodeWav(srcBuf) {
+    const numCh = Math.max(1, srcBuf.numberOfChannels);
+    const len = srcBuf.length;
+    const bytesPerSample = 2, blockAlign = numCh * bytesPerSample;
+    const dataSize = len * blockAlign;
+    const buf = new ArrayBuffer(44 + dataSize);
+    const v = new DataView(buf);
+
+    const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) v.setUint8(off + i, s.charCodeAt(i)); };
+    writeStr(0, 'RIFF'); v.setUint32(4, 36 + dataSize, true); writeStr(8, 'WAVE');
+    writeStr(12, 'fmt '); v.setUint32(16, 16, true);
+    v.setUint16(20, 1, true);              // PCM
+    v.setUint16(22, numCh, true);
+    v.setUint32(24, srcBuf.sampleRate, true);
+    v.setUint32(28, srcBuf.sampleRate * blockAlign, true);
+    v.setUint16(32, blockAlign, true);
+    v.setUint16(34, 16, true);
+    writeStr(36, 'data'); v.setUint32(40, dataSize, true);
+
+    let off = 44;
+    for (let c = 0; c < numCh; c++) {
+      const d = srcBuf.getChannelData(c);
+      for (let i = 0; i < len; i++) {
+        const s = Math.max(-1, Math.min(1, d[i]));
+        v.setInt16(off, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+        off += 2;
+      }
+    }
+    return new Blob([buf], { type: 'audio/wav' });
+  }
+
+  /* ---------- 导出 ---------- */
+
+  function resampled() {
+    // 按设置重采样 / 合并声道（M4A 与 WAV 共用，保证两种格式听感一致）
+    const wantSR = Number(els.sampleRate.value) || audioBuf.sampleRate;
+    const wantCh = els.mono.checked ? 1 : audioBuf.numberOfChannels;
+
+    if (wantSR === audioBuf.sampleRate && wantCh === audioBuf.numberOfChannels) {
+      return audioBuf;
+    }
+    const num = Math.max(1, Math.floor(audioBuf.duration * wantSR));
+    const octx = new (window.AudioContext || window.webkitAudioContext)();
+    const off = new OfflineAudioContext(wantCh, num, wantSR);
+    const s = off.createBufferSource();
+    s.buffer = audioBuf;
+    s.connect(off.destination);
+    s.start(0);
+    return off.startRendering();
+  }
+
+  async function doExport() {
+    if (!audioBuf) return;
+    els.go.disabled = true;
+    els.result.classList.add('hidden');
+
+    if (fmt === 'wav') {
+      setProgress(30, '导出 WAV...');
+      const out = await resampled();
+      const blob = encodeWav(out);
+      hideProgress();
+      showResult(blob, '.wav');
+    } else {
+      await exportM4A();
+    }
+    els.go.disabled = false;
+  }
+
+  async function exportM4A() {
+    // MediaRecorder 只能实时录制：录制时长 ≈ 音频时长
+    setProgress(5, '准备录制...');
+    try {
+      if (!ctx) ctx = new (window.AudioContext || window.webkitAudioContext)();
+      // ctx.resume() 在无用户手势或无声卡的环境可能永不 resolve —— 加超时保护，
+      // 避免按钮永久禁用、进度条永远卡在 5% 却没有任何错误提示。
+      await race(ctx.resume(), 8000, 'AudioContext 未能启动（可能需要先点击页面，或当前环境不支持音频输出）');
+
+      const out = await resampled();
+      const dest = ctx.createMediaStreamDestination();
+      const rec = new MediaRecorder(dest.stream, {
+        mimeType: 'audio/mp4', audioBitsPerSecond: 128000
+      });
+      recorder = rec; chunks = [];
+      rec.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+
+      const stopped = new Promise(r => rec.onstop = r);
+      const src = ctx.createBufferSource();
+      src.buffer = out;
+      src.connect(dest);
+      src.connect(ctx.destination);   // 需要真实通路才会推进时钟
+
+      rec.start();
+      setProgress(12, `录制中...（实时进行，约 ${Math.max(1, Math.round(out.duration))} 秒）`);
+      let last = -1;
+      playTimer = setInterval(() => {
+        const p = Math.min(96, 12 + (out.duration > 0
+          ? (src.playbackDelay / out.duration) * 84 : 0));
+        if (p !== last) { last = p; els.pbarFill.style.width = p + '%'; }
+      }, 120);
+      src.start();
+      // 录制超时保护：playbackDelay 应随时间推进，若长时间不动说明未被消费
+      const deadline = 30 + out.duration * 2;   // 宽松上限：音频时长 2 倍 + 30s
+      await race(new Promise((res, rej) => {
+        src.onended = () => res();
+        setTimeout(() => rej(new Error(`录制超时（${Math.round(deadline)}s 未结束），已中止`)), deadline * 1000);
+      }), deadline * 1000 + 1000, '录制超时');
+      rec.stop();
+      await stopped;
+      if (playTimer) { clearInterval(playTimer); playTimer = null; }
+
+      const blob = new Blob(chunks, { type: 'audio/mp4' });
+      if (blob.size < 1000) throw new Error('录制数据过小');
+      setProgress(100, '完成');
+      setTimeout(() => { hideProgress(); showResult(blob, '.m4a'); }, 400);
+    } catch (e) {
+      console.error('[m4a]', e);
+      if (playTimer) { clearInterval(playTimer); playTimer = null; }
+      hideProgress();
+      els.result.classList.remove('hidden');
+      els.result.style.background = '#fef2f2';
+      els.result.style.borderColor = '#fecaca';
+      els.result.innerHTML = `<div class="ico">⚠️</div><div class="txt"><b>M4A 导出失败</b><span>${String(e.message || e).slice(0, 140)}</span></div>`;
+      setTimeout(() => { els.result.style.background = ''; els.result.style.borderColor = ''; }, 5000);
+    }
+  }
+
+  function showResult(blob, ext) {
+    const base = (file ? file.name : 'audio').replace(/\.[^.]+$/, '') + ext;
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = base;
+    const size = fmtBytes(blob.size);
+    els.result.classList.remove('hidden');
+    els.result.innerHTML = `<div class="ico">✅</div><div class="txt"><b>${base}</b>
+      <span>${size} · ${ext === '.wav' ? '无损未压缩' : 'AAC 有损压缩'}</span></div>`;
+    const dl = document.createElement('a');
+    dl.className = 'dl'; dl.href = a.href; dl.download = base; dl.textContent = '下载';
+    els.result.appendChild(dl);
+    setTimeout(() => a.click(), 60);
+  }
+
+  /* ---------- 事件绑定 ---------- */
+
+  els.drop.addEventListener('click', () => els.fileInput.click());
+  els.fileInput.addEventListener('change', e => { if (e.target.files[0]) accept(e.target.files[0]); });
+  ['dragenter', 'dragover'].forEach(t => els.drop.addEventListener(t, e => {
+    e.preventDefault(); els.drop.classList.add('over');
+  }));
+  ['dragleave', 'drop'].forEach(t => els.drop.addEventListener(t, e => {
+    e.preventDefault(); els.drop.classList.remove('over');
+  }));
+  els.drop.addEventListener('drop', e => {
+    const f = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (f) accept(f);
+  });
+
+  els.clear.addEventListener('click', () => {
+    els.fileInput.value = '';
+    file = null; audioBuf = null;
+    stopPreview();
+    ['filebar', 'trackCard', 'playerCard', 'optCard', 'go', 'result'].forEach(k => els[k].classList.add('hidden'));
+    els.emptyTip.classList.remove('hidden');
+    hideProgress();
+  });
+
+  els.playBtn.addEventListener('click', togglePlay);
+  els.trackbar.addEventListener('click', e => {
+    if (!audioEl || !isFinite(audioEl.duration)) return;
+    const r = els.trackbar.getBoundingClientRect();
+    audioEl.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * audioEl.duration;
+    updatePlayUI();
+  });
+  els.vol.addEventListener('input', () => {
+    els.volVal.textContent = els.vol.value + '%';
+    if (audioEl) audioEl.volume = els.vol.value / 100;
+  });
+
+  els.fmtSeg.querySelectorAll('button').forEach(b => b.addEventListener('click', () => {
+    els.fmtSeg.querySelectorAll('button').forEach(x => x.classList.remove('on'));
+    b.classList.add('on');
+    fmt = b.dataset.f;
+    els.fmtHint.textContent = fmt === 'wav'
+      ? 'WAV 即时导出，无损未压缩。M4A 为有损压缩（AAC），体积更小。'
+      : 'M4A 为 AAC 有损压缩，体积小。录制按音频时长实时进行（1 分钟音频约等 1 分钟）。';
+  }));
+
+  els.go.addEventListener('click', doExport);
+
+  // Ctrl+V 粘贴视频文件
+  document.addEventListener('paste', e => {
+    const it = [...(e.clipboardData?.items || [])].find(i => i.type.startsWith('video/'));
+    if (it && it.getAsFile()) accept(it.getAsFile());
+  });
+</script>
