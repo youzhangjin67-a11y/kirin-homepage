@@ -57,6 +57,7 @@ import Nav from '../../components/Nav.astro';
         <label style="min-width:88px">格式</label>
         <div class="seg" id="fmtSeg">
           <button data-f="wav" class="on">WAV</button>
+          <button data-f="mp3">MP3</button>
           <button data-f="m4a">M4A</button>
         </div>
       </div>
@@ -71,7 +72,7 @@ import Nav from '../../components/Nav.astro';
         </select>
         <label class="chk"><input type="checkbox" id="mono" />单声道</label>
       </div>
-      <p class="hint" id="fmtHint">WAV 即时导出，无损未压缩。M4A 为有损压缩（AAC），体积更小。</p>
+      <p class="hint" id="fmtHint">WAV 即时导出，无损未压缩。M4A 为 AAC 有损压缩，MP3 为有损压缩且兼容性最好。</p>
     </div>
 
     <div class="actions">
@@ -199,7 +200,17 @@ footer { margin-top:46px; text-align:center; color:var(--dim); font-size:.78rem;
 
 <script>
   // 视频转音频：AudioContext.decodeAudioData 直接从视频容器解码音轨
-  // WAV 即时导出（手写 RIFF 头）；M4A 用 MediaRecorder 实时录制（audio/mp4, AAC）
+  // WAV 即时导出（手写 RIFF 头）；MP3 用 lamejs 即时编码；M4A 用 MediaRecorder 实时录制
+  //
+  // MP3 编码用 vendored 的 @breezustack/lamejs 1.2.7（lamejs 的活跃维护 fork）：
+  //  - 原版 lamejs 1.2.1 是坏的（ReferenceError: MPEGMode is not defined）
+  //  - 原版 lamejs 1.2.0 虽然 Node 里能跑，但在浏览器里报 `Lame is not defined`
+  //    （Node 宽松的全局变量加载会掩盖这个 bug，浏览器严格模式直接炸）
+  //  - 所以用 fork，并已在浏览器里实测编码通过
+  //  - 该 fork 的 npm tarball 已被 registry 撤销（元数据仍在但下载 404），
+  //    故打包后固定在 src/lib/vendor/ 而不是作为 npm 依赖 —— 否则任何人
+  //    clone 后 npm install 都会失败。详见 vendor/lamejs.mjs 头部说明与 LICENSE.md。
+  import { Mp3Encoder } from '../../lib/vendor/lamejs.mjs';
 
   const $ = id => document.getElementById(id);
   const els = {
@@ -408,6 +419,60 @@ footer { margin-top:46px; text-align:center; color:var(--dim); font-size:.78rem;
     return new Blob([buf], { type: 'audio/wav' });
   }
 
+  /* ---------- MP3 编码（lamejs，即时）---------- */
+
+  // lamejs 要 Int16 PCM。AudioBuffer 是 Float32（-1..1），需先转 Int16。
+  // 声道必须逐通道各自转 Int16 —— 和 WAV 交错问题不同，这里 encodeBuffer
+  // 是按「通道」分别接收的，不能交错后传给 encoder。
+  //
+  // 编码拆成 async 分段：单次 encodeBuffer 调用本身很小，但整段音频是连续大循环，
+  // 同步跑完会长时间占用主线程，进度条冻结。每 N 帧让出主线程一次并刷新进度。
+  function toInt16(chData) {
+    const a = new Int16Array(chData.length);
+    for (let i = 0; i < chData.length; i++) {
+      const s = Math.max(-1, Math.min(1, chData[i]));
+      a[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    }
+    return a;
+  }
+
+  const yieldMain = () => new Promise(r => setTimeout(r, 0));
+
+  async function encodeMp3(srcBuf, bitrateKbps) {
+    const numCh = Math.max(1, srcBuf.numberOfChannels);
+    const len = srcBuf.length;
+    const ch = [];
+    for (let c = 0; c < numCh; c++) ch.push(toInt16(srcBuf.getChannelData(c)));
+
+    const enc = new Mp3Encoder(numCh, srcBuf.sampleRate, bitrateKbps);
+    const frames = [];
+    const bs = 1152;
+    const stepFrames = bs * 64; // 每 ~64 个帧让出一次主线程
+
+    for (let i = 0; i < len; i += bs) {
+      const args = numCh === 1
+        ? [ch[0].subarray(i, i + bs)]
+        : [ch[0].subarray(i, i + bs), ch[1].subarray(i, i + bs)];
+      const d = enc.encodeBuffer.apply(enc, args);
+      if (d.length) frames.push(d);
+
+      if (i % stepFrames === 0 && i + bs < len) {
+        setProgress(25 + Math.round(65 * i / len), 'MP3 编码中…');
+        await yieldMain();
+      }
+    }
+
+    const end = enc.flush();
+    if (end.length) frames.push(end);
+
+    const total = frames.reduce((s, f) => s + f.length, 0);
+    const buf = new ArrayBuffer(total);
+    const u = new Uint8Array(buf);
+    let off = 0;
+    for (const f of frames) { u.set(f, off); off += f.length; }
+    return new Blob([buf], { type: 'audio/mpeg' });
+  }
+
   /* ---------- 导出 ---------- */
 
   function resampled() {
@@ -439,6 +504,12 @@ footer { margin-top:46px; text-align:center; color:var(--dim); font-size:.78rem;
       const blob = encodeWav(out);
       hideProgress();
       showResult(blob, '.wav');
+    } else if (fmt === 'mp3') {
+      setProgress(20, '准备 MP3 编码...');
+      const out = await resampled();
+      const blob = await encodeMp3(out, 192);
+      hideProgress();
+      showResult(blob, '.mp3');
     } else {
       await exportM4A();
     }
@@ -511,7 +582,7 @@ footer { margin-top:46px; text-align:center; color:var(--dim); font-size:.78rem;
     const size = fmtBytes(blob.size);
     els.result.classList.remove('hidden');
     els.result.innerHTML = `<div class="ico">✅</div><div class="txt"><b>${base}</b>
-      <span>${size} · ${ext === '.wav' ? '无损未压缩' : 'AAC 有损压缩'}</span></div>`;
+      <span>${size} · ${{ '.wav': '无损未压缩', '.mp3': 'MP3 有损压缩 (192 kbps)', '.m4a': 'AAC 有损压缩' }[ext] || ext.toUpperCase() }</span></div>`;
     const dl = document.createElement('a');
     dl.className = 'dl'; dl.href = a.href; dl.download = base; dl.textContent = '下载';
     els.result.appendChild(dl);
@@ -558,9 +629,11 @@ footer { margin-top:46px; text-align:center; color:var(--dim); font-size:.78rem;
     els.fmtSeg.querySelectorAll('button').forEach(x => x.classList.remove('on'));
     b.classList.add('on');
     fmt = b.dataset.f;
-    els.fmtHint.textContent = fmt === 'wav'
-      ? 'WAV 即时导出，无损未压缩。M4A 为有损压缩（AAC），体积更小。'
-      : 'M4A 为 AAC 有损压缩，体积小。录制按音频时长实时进行（1 分钟音频约等 1 分钟）。';
+    els.fmtHint.textContent = {
+      wav: 'WAV 即时导出，无损未压缩。M4A 为 AAC 有损压缩，MP3 为有损压缩且兼容性最好。',
+      mp3: 'MP3 即时导出，有损压缩（192 kbps）。兼容性最好，各类设备/平台通用。',
+      m4a: 'M4A 为 AAC 有损压缩，体积小。录制按音频时长实时进行（1 分钟音频约等 1 分钟）。'
+    }[fmt];
   }));
 
   els.go.addEventListener('click', doExport);
