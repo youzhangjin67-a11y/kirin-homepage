@@ -2,6 +2,10 @@
 import '../styles/global.css';
 
 const { title = 'Kirin | 前端工程师', description = '把 AI 变成产品的前端工程师 —— Web 性能优化、工程化、AI 应用落地。' } = Astro.props;
+// BASE_URL 在 base=/ 时值为 '/'，直接拼 `${base}/favicon.svg` 会得到 '//favicon.svg'
+// （协议相对 URL），导致 favicon 与 manifest 指向不存在的域名。
+const base = import.meta.env.BASE_URL;
+const asset = (path) => (base === '/' ? path : `${base}${path}`);
 ---
 
 <!doctype html>
@@ -14,8 +18,8 @@ const { title = 'Kirin | 前端工程师', description = '把 AI 变成产品的
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
-    <link rel="icon" type="image/svg+xml" href={`${import.meta.env.BASE_URL}/favicon.svg`} />
-    <link rel="manifest" href={`${import.meta.env.BASE_URL}/manifest.webmanifest`} />
+    <link rel="icon" type="image/svg+xml" href={asset('/favicon.svg')} />
+    <link rel="manifest" href={asset('/manifest.webmanifest')} />
     <title>{title}</title>
   </head>
   <body>

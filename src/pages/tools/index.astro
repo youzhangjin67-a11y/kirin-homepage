@@ -1,6 +1,10 @@
 ---
 import Base from '../../layouts/Base.astro';
 import Nav from '../../components/Nav.astro';
+// BASE_URL 在 base=/ 时值为 '/'，直接拼 `${base}/tools/image/` 会得到 '//tools/image/'
+// （协议相对 URL），工具箱卡片会跳到不存在的域名。用 join() 统一处理。
+const base = import.meta.env.BASE_URL;
+const join = (path) => (base === '/' ? path : `${base}${path}`);
 ---
 
 <Base title="Kirin 工具箱" description="Kirin 的在线小工具集合：图片处理与抖音无水印提取。">
@@ -10,7 +14,7 @@ import Nav from '../../components/Nav.astro';
     <p class="sub">自用在线小工具，纯前端处理为主，不留存任何上传内容。</p>
 
     <div class="tool-grid">
-      <a class="tool-card" href={`${import.meta.env.BASE_URL}/tools/image/`}>
+      <a class="tool-card" href={join('/tools/image/')}>
         <div class="tool-icon">🖼️</div>
         <div>
           <h2>图片工具箱</h2>
@@ -18,7 +22,7 @@ import Nav from '../../components/Nav.astro';
         </div>
         <span class="tool-arrow" aria-hidden="true">&gt;</span>
       </a>
-      <a class="tool-card" href={`${import.meta.env.BASE_URL}/tools/douyin/`}>
+      <a class="tool-card" href={join('/tools/douyin/')}>
         <div class="tool-icon">🎬</div>
         <div>
           <h2>抖音无水印提取</h2>
@@ -26,7 +30,7 @@ import Nav from '../../components/Nav.astro';
         </div>
         <span class="tool-arrow" aria-hidden="true">&gt;</span>
       </a>
-      <a class="tool-card" href={`${import.meta.env.BASE_URL}/tools/watermark/`}>
+      <a class="tool-card" href={join('/tools/watermark/')}>
         <div class="tool-icon">🔖</div>
         <div>
           <h2>图片加水印</h2>
@@ -34,18 +38,18 @@ import Nav from '../../components/Nav.astro';
         </div>
         <span class="tool-arrow" aria-hidden="true">&gt;</span>
       </a>
-      <a class="tool-card" href={`${import.meta.env.BASE_URL}/tools/video2audio/`}>
+      <a class="tool-card" href={join('/tools/video2audio/')}>
         <div class="tool-icon">🎵</div>
         <div>
           <h2>视频转音频</h2>
-          <p>提取视频音轨 · 导出 WAV / M4A · 可试听</p>
+          <p>提取视频音轨 · 导出 WAV / MP3 / M4A · 可试听</p>
         </div>
         <span class="tool-arrow" aria-hidden="true">&gt;</span>
       </a>
     </div>
 
     <footer class="foot">
-      <a href={`${import.meta.env.BASE_URL}`}>kirin.dev</a>
+      <a href={join('/')}>kirin.dev</a>
     </footer>
   </main>
 </Base>

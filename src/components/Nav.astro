@@ -2,18 +2,22 @@
 // 全站统一导航。首页与所有工具页共用，保证视觉与交互完全一致。
 // active: 用于高亮当前页面对应的入口（'tools' | undefined）
 const { active } = Astro.props;
+// BASE_URL 在 base=/ 时值就是 '/'，直接拼 `${base}/path` 会得到 '//path'
+// （协议相对 URL，浏览器会解析到不存在的域名，站内导航全部失效）。
+// 所以用 join() 统一拼路径，对根路径与子路径部署都正确。
 const base = import.meta.env.BASE_URL;
+const join = (path) => (base === '/' ? path : `${base}${path}`);
 ---
 
 <nav class="nav">
   <div class="container nav-inner">
-    <a href={base} class="nav-logo">kirin<span>.dev</span></a>
+    <a href={join('/')} class="nav-logo">kirin<span>.dev</span></a>
     <div class="nav-links" id="navLinks">
-      <a href={`${base}/#work`}>作品</a>
-      <a href={`${base}/#stack`}>技术栈</a>
-      <a href={`${base}/posts`}>博客</a>
-      <a href={`${base}/tools/`} class={active === 'tools' ? 'is-active' : undefined}>工具箱 </a>
-      <a href={`${base}/#contact`} class="nav-cta">联系我</a>
+      <a href={join('/#work')}>作品</a>
+      <a href={join('/#stack')}>技术栈</a>
+      <a href={join('/posts')}>博客</a>
+      <a href={join('/tools/')} class={active === 'tools' ? 'is-active' : undefined}>工具箱 </a>
+      <a href={join('/#contact')} class="nav-cta">联系我</a>
     </div>
     <button class="nav-burger" id="navBurger" aria-label="打开菜单" aria-expanded="false">
       <span></span><span></span><span></span>
